@@ -1,35 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  deleteStudentAPI,
-  setStudentEdit,
-  setSearch,
-  studentSearchList,
-} from '../store/Form/slice'
+import { deleteStudentAPI, setStudentEdit } from '../store/Form/slice'
 
 export const StudentTable = () => {
-  const { StudentList, searchStudent } = useSelector((state) => state.btForm)
   const dispatch = useDispatch()
-
+  const { StudentList } = useSelector((state) => state.btForm)
+  // console.log('StudentLIST ', StudentList)
   const [searchValue, setSearchValue] = useState('')
-  const [searchResult, setSearchResult] = useState([])
-
-  // Sử dụng useEffect để cập nhật searchResult khi searchStudent thay đổi
-  useEffect(() => {
-    setSearchResult(searchStudent)
-  }, [searchStudent])
+  const [searchStudentList, setSearchStudentList] = useState(StudentList)
 
   const handleSearch = (event) => {
     const { value } = event.target
     let lowerCase = value.toLowerCase()
     setSearchValue(lowerCase)
-    dispatch(studentSearchList(lowerCase)) // Gửi giá trị tìm kiếm đến action
-  }
-  if (searchResult === null) {
-    setSearchResult(StudentList)
   }
 
-  console.log(searchResult);
+  useEffect(() => {
+    const filterStudent = StudentList.filter((item) => {
+      return item.hoTen.toLowerCase().includes(searchValue)
+    })
+    setSearchStudentList(filterStudent)
+  }, [searchValue])
+
+  useEffect(() => {
+    setSearchStudentList(StudentList)
+    searchValue && setSearchValue('')
+  }, [StudentList])
+
   return (
     <>
       <div className=" mt-3 d-flex justify-content-end">
@@ -43,14 +40,6 @@ export const StudentTable = () => {
           placeholder="Search"
           aria-label="Search"
         />
-        <button
-          className="btn btn-outline-primary ml-2"
-          onClick={() => {
-            dispatch(studentSearchList(searchValue))
-          }}
-        >
-          search
-        </button>
       </div>
       {
         <table className="table mt-3">
@@ -65,34 +54,36 @@ export const StudentTable = () => {
           </thead>
 
           <tbody>
-            {searchResult?.map((item) => {
-              return (
-                <tr key={item.id}>
-                  <td>{item.maSV}</td>
-                  <td>{item.hoTen}</td>
-                  <td>{item.email}</td>
-                  <td>{item.sdt}</td>
-                  <td>
-                    <button
-                      className="btn btn-primary mr-2"
-                      onClick={() => {
-                        dispatch(setStudentEdit(item))
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => {
-                        dispatch(deleteStudentAPI(item.id))
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
+            {(searchValue !== '' ? searchStudentList : StudentList)?.map(
+              (item) => {
+                return (
+                  <tr key={item.id}>
+                    <td>{item.maSV}</td>
+                    <td>{item.hoTen}</td>
+                    <td>{item.email}</td>
+                    <td>{item.sdt}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary mr-2"
+                        onClick={() => {
+                          dispatch(setStudentEdit(item))
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => {
+                          dispatch(deleteStudentAPI(item.id))
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              }
+            )}
           </tbody>
         </table>
       }

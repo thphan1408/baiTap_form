@@ -9,8 +9,15 @@ import {
 export const StudentForm = () => {
   const dispatch = useDispatch()
   const { StudentEdit } = useSelector((state) => state.btForm)
-  // console.log('StudentEdit', StudentEdit)
+
   const [formValue, setFormValue] = useState({
+    maSV: '',
+    hoTen: '',
+    email: '',
+    sdt: '',
+  })
+
+  const [formError, setFormError] = useState({
     maSV: '',
     hoTen: '',
     email: '',
@@ -21,14 +28,60 @@ export const StudentForm = () => {
     // console.log('event', event)
     // destructuring event.target
     const { name, value } = event.target
+
+    setFormError({ ...formError, [name]: validate(name, value) })
+
     setFormValue({
       ...formValue, // giữ lại các giá trị cũ
       [name]: value, // cập nhật giá trị mới
     })
   }
 
+  const validate = (name, value) => {
+    switch (name) {
+      case 'maSV':
+        if (value.trim() === '') {
+          return `${name} không được để trống`
+        } else {
+          return ''
+        }
+      case 'hoTen':
+        if (value.trim() === '') {
+          return `${name} không được để trống`
+        } else {
+          return ''
+        }
+      case 'sdt':
+        if (value.trim() === '') {
+          return `${name} không được để trống`
+        } else if (!value.match(new RegExp('^[0-9]*$'))) {
+          return `${name} phải là số`
+        } else {
+          return ''
+        }
+      case 'email':
+        if (value.trim() === '') {
+          return `${name} không được để trống`
+        } else if (
+          !value.match(new RegExp('^[a-zA-Z0-9]+@[a-zA-Z0-9]+.[A-Za-z]+$'))
+        ) {
+          return `${name} không đúng định dạng`
+        } else {
+          return ''
+        }
+      default:
+        return ''
+    }
+  }
+
   useEffect(() => {
     if (StudentEdit) {
+      setFormError({
+        maSV: '',
+        hoTen: '',
+        email: '',
+        sdt: '',
+      })
       setFormValue(StudentEdit)
     }
   }, [StudentEdit])
@@ -44,6 +97,23 @@ export const StudentForm = () => {
         onSubmit={(event) => {
           event.preventDefault()
           // console.log('formValue', formValue)
+
+          // Validate
+          const validationError = {}
+
+          Object.keys(formValue).forEach((name) => {
+            const error = validate(name, formValue[name])
+            if (error && error.length > 0) {
+              validationError[name] = error
+            }
+          })
+
+          if (Object.keys(validationError).length > 0) {
+            setFormError(validationError)
+            return
+          }
+
+          // end validate
 
           if (StudentEdit) {
             dispatch(updateStudentAPI({ formValue, id: StudentEdit.id }))
@@ -74,6 +144,11 @@ export const StudentForm = () => {
                 onChange={handleOnChange}
                 value={formValue.maSV}
               />
+              {formError.maSV && (
+                <p>
+                  <small className="text-danger">{formError.maSV}</small>
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="sdt">Số điện thoại</label>
@@ -86,6 +161,11 @@ export const StudentForm = () => {
                 onChange={handleOnChange}
                 value={formValue.sdt}
               />
+              {formError.sdt && (
+                <p>
+                  <small className="text-danger">{formError.sdt}</small>
+                </p>
+              )}
             </div>
           </div>
           <div className="col-md-6">
@@ -100,6 +180,11 @@ export const StudentForm = () => {
                 onChange={handleOnChange}
                 value={formValue.hoTen}
               />
+              {formError.hoTen && (
+                <p>
+                  <small className="text-danger">{formError.hoTen}</small>
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="email">Email</label>
@@ -112,6 +197,11 @@ export const StudentForm = () => {
                 onChange={handleOnChange}
                 value={formValue.email}
               />
+              {formError.email && (
+                <p>
+                  <small className="text-danger">{formError.email}</small>
+                </p>
+              )}
             </div>
           </div>
         </div>
