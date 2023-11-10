@@ -2,28 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 const initialState = {
-  StudentList: [
-    {
-      maSV: '1',
-      hoTen: '111',
-      email: 'a@gmail.com',
-      sdt: '113',
-    },
-    {
-      maSV: '2',
-      hoTen: '222',
-      email: 'a@gmail.com',
-      sdt: '113',
-    },
-    {
-      maSV: '3',
-      hoTen: '333',
-      email: 'a@gmail.com',
-      sdt: '113',
-    },
-  ],
-  searchStudent: undefined,
-  searchQuery: '',
+  StudentList: [],
+  // searchStudentList: [],
+  // searchQuery: '',
   StudentEdit: undefined,
   isSuccess: false,
   isLoading: false,
@@ -105,95 +86,89 @@ const sliceForm = createSlice({
     setStudentEdit: (state, action) => {
       state.StudentEdit = action.payload
     },
-    setSearch: (state, action) => {
-      state.searchQuery = action.payload
-    },
+    // setSearch: (state, action) => {
+    //   state.searchQuery = action.payload
+    // },
 
     // searchStudent: (state) => {
-    //   state.searchStudent = state.StudentList.filter((item) => {
+    //   state.searchStudentList = state.StudentList.filter((item) => {
     //     return item.hoTen
     //       .toLowerCase()
     //       .includes(state.searchQuery.toLowerCase())
     //   })
     // },
-    studentSearchList: (state, action) => {
-      state.searchStudent = state.StudentList.filter(
-        (value) => value.hoTen === action.payload
-      )
-    },
   },
-  // extraReducers: (builder) => {
-  //   // Get List
-  //   builder.addCase(getListStudentAPI.pending, (state, action) => {
-  //     state.isLoading = true
-  //     // console.log('pending', action)
-  //   }),
-  //     builder.addCase(getListStudentAPI.fulfilled, (state, action) => {
-  //       // console.log('fulfilled', action)
-  //       state.isLoading = false
+  extraReducers: (builder) => {
+    // Get List
+    builder.addCase(getListStudentAPI.pending, (state, action) => {
+      state.isLoading = true
+      // console.log('pending student', state.StudentList)
+    }),
+      builder.addCase(getListStudentAPI.fulfilled, (state, action) => {
+        // console.log('fulfilled', action)
+        state.isLoading = false
+        state.StudentList = action.payload
+        // console.log('action.payload', state.StudentList)
+      }),
+      builder.addCase(getListStudentAPI.rejected, (state, action) => {
+        state.isLoading = false
+        // console.log('rejected', action)
+      })
 
-  //       state.StudentList = action.payload
-  //     }),
-  //     builder.addCase(getListStudentAPI.rejected, (state, action) => {
-  //       state.isLoading = false
-  //       // console.log('rejected', action)
-  //     })
+    // Delete Student
+    builder.addCase(deleteStudentAPI.pending, (state, action) => {
+      state.isLoading = true
+      // console.log('pending', action)
+    }),
+      builder.addCase(deleteStudentAPI.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.StudentList = state.StudentList.filter(
+          (item) => item.id !== action.payload
+        )
+      }),
+      builder.addCase(deleteStudentAPI.rejected, (state, action) => {
+        state.isLoading = false
+      })
 
-  //   // Delete Student
-  //   builder.addCase(deleteStudentAPI.pending, (state, action) => {
-  //     state.isLoading = true
-  //     // console.log('pending', action)
-  //   }),
-  //     builder.addCase(deleteStudentAPI.fulfilled, (state, action) => {
-  //       state.isLoading = false
-  //       state.StudentList = state.StudentList.filter(
-  //         (item) => item.id !== action.payload
-  //       )
-  //     }),
-  //     builder.addCase(deleteStudentAPI.rejected, (state, action) => {
-  //       state.isLoading = false
-  //     })
+    // Add Student
+    builder.addCase(addStudentAPI.pending, (state, action) => {
+      state.isLoading = true
+      // console.log('pending', action)
+    }),
+      builder.addCase(addStudentAPI.fulfilled, (state, action) => {
+        state.isLoading = false
+        // console.log('fulfilled', action)
+        state.StudentList.push(action.payload)
+      }),
+      builder.addCase(addStudentAPI.rejected, (state, action) => {
+        state.isLoading = false
+        // console.log('rejected', action)
+      })
 
-  //   // Add Student
-  //   builder.addCase(addStudentAPI.pending, (state, action) => {
-  //     state.isLoading = true
-  //     // console.log('pending', action)
-  //   }),
-  //     builder.addCase(addStudentAPI.fulfilled, (state, action) => {
-  //       state.isLoading = false
-  //       // console.log('fulfilled', action)
-  //       state.StudentList.push(action.payload)
-  //     }),
-  //     builder.addCase(addStudentAPI.rejected, (state, action) => {
-  //       state.isLoading = false
-  //       // console.log('rejected', action)
-  //     })
+    // Update Student
+    builder.addCase(updateStudentAPI.pending, (state, action) => {
+      state.isLoading = true
+      // console.log('pending', action)
+    }),
+      builder.addCase(updateStudentAPI.fulfilled, (state, action) => {
+        state.isLoading = false
+        // // console.log('fulfilled', action)
+        const studentIndex = state.StudentList.findIndex(
+          (item) => item.id === action.payload.id
+        )
 
-  //   // Update Student
-  //   builder.addCase(updateStudentAPI.pending, (state, action) => {
-  //     state.isLoading = true
-  //     // console.log('pending', action)
-  //   }),
-  //     builder.addCase(updateStudentAPI.fulfilled, (state, action) => {
-  //       state.isLoading = false
-  //       // // console.log('fulfilled', action)
-  //       const studentIndex = state.StudentList.findIndex(
-  //         (item) => item.id === action.payload.id
-  //       )
-
-  //       if (studentIndex !== -1) {
-  //         // console.log('Đã tìm thấy')
-  //         state.StudentList[studentIndex] = action.payload
-  //         state.StudentEdit = undefined
-  //       }
-  //     }),
-  //     builder.addCase(updateStudentAPI.rejected, (state, action) => {
-  //       state.isLoading = false
-  //       // console.log('rejected', action)
-  //     })
-  // },
+        if (studentIndex !== -1) {
+          // console.log('Đã tìm thấy')
+          state.StudentList[studentIndex] = action.payload
+          state.StudentEdit = undefined
+        }
+      }),
+      builder.addCase(updateStudentAPI.rejected, (state, action) => {
+        state.isLoading = false
+        // console.log('rejected', action)
+      })
+  },
 })
 
 export const { reducer: formReducer } = sliceForm
-export const { setStudentEdit, setSearch, studentSearchList } =
-  sliceForm.actions
+export const { setStudentEdit, setSearch, searchStudent } = sliceForm.actions
